@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+	
+ 
+	<bean id="documentorDocumentationIndexPage" class="org.geoserver.web.MenuPageInfo">
+		<property name="id" value="documentor.index" />
+		<property name="titleKey" value="DocumentationIndexPage.title" />
+		<property name="descriptionKey" value="DocumentationIndexPage.description" />
+		<property name="componentClass"
+			value="de.geops.geoserver.documentor.web.DocumentationIndexPage" />
+		<property name="category" ref="aboutStatusCategory" />
+		<property name="icon" value="img/book.png" />
+		<property name="order" value="35" />
+	</bean>
+	
+</beans>

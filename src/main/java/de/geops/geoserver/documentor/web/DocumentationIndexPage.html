@@ -1,0 +1,33 @@
+<html>
+<body>
+	<wicket:extend>
+		<div>
+			<form>
+				<ul>
+					<li>
+						<fieldset style="margin-top: 1em;">
+							<legend>
+								<span><wicket:message key="general">General</wicket:message></span>
+							</legend>
+							<ul>
+								<li><wicket:message key="notice">Notice text</wicket:message></li>
+							</ul>
+						</fieldset>
+					</li>
+					<li>
+						<fieldset style="margin-top: 1em;">
+							<legend>
+								<span><wicket:message key="workspaces">Workspaces</wicket:message></span>
+							</legend>
+							<ul>
+								<li wicket:id="listview"><a wicket:id="link"><span wicket:id="workspaceName"></span></a></li>
+							</ul>
+						</fieldset>
+					</li>
+				</ul>
+			</form>
+		</div>
+
+	</wicket:extend>
+</body>
+</html>
