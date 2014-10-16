@@ -20,8 +20,10 @@ import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.WorkspaceInfo;
 import org.geoserver.web.GeoServerApplication;
+import org.geotools.jdbc.RegexpValidator;
 import org.geotools.jdbc.VirtualTable;
 import org.geotools.jdbc.VirtualTableParameter;
+import org.geotools.jdbc.VirtualTableParameter.Validator;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -30,7 +32,7 @@ import de.geops.geoserver.documentor.info.FeatureTypeDoc;
 import de.geops.geoserver.documentor.info.LayerDoc;
 import de.geops.geoserver.documentor.info.PropertyDoc;
 import de.geops.geoserver.documentor.info.SqlViewDoc;
-import de.geops.geoserver.documentor.info.SqlViewDoc.Parameter;
+import de.geops.geoserver.documentor.info.SqlViewParameterDoc;
 import de.geops.geoserver.documentor.info.StoreDoc;
 import de.geops.geoserver.documentor.info.WorkspaceDoc;
 import de.geops.geoserver.documentor.info.WorkspaceFullDoc;
@@ -62,14 +64,20 @@ public class Harvester {
 				sqlViewDoc.setSqlQuery(vt.getSql());
 				
 				//  parameters
-				ArrayList<SqlViewDoc.Parameter> sqlViewDocParams = new ArrayList<SqlViewDoc.Parameter>();
+				ArrayList<SqlViewParameterDoc> sqlViewDocParams = new ArrayList<SqlViewParameterDoc>();
 				for (final String vtParamName: vt.getParameterNames()) {
 					VirtualTableParameter vtParam = vt.getParameter(vtParamName);
 					if (vtParam != null) {
-						Parameter paramDoc = sqlViewDoc.new Parameter();
+						SqlViewParameterDoc paramDoc = new SqlViewParameterDoc();
 						paramDoc.setName(vtParam.getName());
 						paramDoc.setDefaultValue(vtParam.getDefaultValue());
-						paramDoc.setValidator(vtParam.getValidator().toString());
+						
+						Validator validator = vtParam.getValidator();
+						if (validator != null && validator instanceof RegexpValidator) {
+							RegexpValidator reValidator = (RegexpValidator) validator;
+							paramDoc.setValidator(reValidator.getPattern().pattern());
+						}
+	
 						sqlViewDocParams.add(paramDoc);
 					}
 				}

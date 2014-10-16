@@ -4,40 +4,11 @@ import java.util.List;
 
 public class SqlViewDoc {
 
-	public class Parameter {
-		protected String name;
-		protected String defaultValue;
-		protected String validator;
-
-		public String getDefaultValue() {
-			return defaultValue;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public String getValidator() {
-			return validator;
-		}
-
-		public void setDefaultValue(String defaultValue) {
-			this.defaultValue = defaultValue;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public void setValidator(String validator) {
-			this.validator = validator;
-		}
-	}
 
 	protected String sqlQuery;
-	protected List<Parameter> parameters;
+	protected List<SqlViewParameterDoc> parameters;
 
-	public List<Parameter> getParameters() {
+	public List<SqlViewParameterDoc> getParameters() {
 		return parameters;
 	}
 
@@ -45,7 +16,7 @@ public class SqlViewDoc {
 		return sqlQuery;
 	}
 
-	public void setParameters(List<Parameter> parameters) {
+	public void setParameters(List<SqlViewParameterDoc> parameters) {
 		this.parameters = parameters;
 	}
 
