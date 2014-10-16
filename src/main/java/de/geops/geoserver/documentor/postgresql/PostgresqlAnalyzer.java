@@ -1,4 +1,4 @@
-package de.geops.geoserver.documentor;
+package de.geops.geoserver.documentor.postgresql;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.geotools.util.logging.Logging;
 
 import de.geops.geoserver.documentor.info.PropertyDoc;
 import de.geops.geoserver.documentor.info.TableDoc;
+import de.geops.geoserver.documentor.postgresql.ExplainAnalyzer.Table;
 
 public class PostgresqlAnalyzer {
 	
@@ -34,7 +36,7 @@ public class PostgresqlAnalyzer {
 	
 	protected HashSet<TableDoc> tablesFound = new HashSet<TableDoc>();
 
-	public PostgresqlAnalyzer(StoreInfo storeInfo) {
+	public PostgresqlAnalyzer(StoreInfo storeInfo) throws PostgresqlException {
 		if (!storeInfo.getType().equals("PostGIS")) {
 			throw new IllegalArgumentException("No PostGIS store given. Got: "+storeInfo.getType());
 		}
@@ -51,26 +53,13 @@ public class PostgresqlAnalyzer {
 			}
 			datastore = (JDBCDataStore) datastoreObj;
 			connection = datastore.getConnection(Transaction.AUTO_COMMIT);
+			connection.setAutoCommit(false);
 			
 		} catch (IOException e) {
-			throw new RuntimeException("Could not open Datastore "+storeInfo.getName(), e);
+			throw new PostgresqlException("Could not open Datastore "+storeInfo.getName(), e);
+		} catch (SQLException e) {
+			throw new PostgresqlException("Could not diable autocommit in Datastore "+storeInfo.getName(), e);
 		}
-	}
-	
-	public void analzyeTable(String tableSchema, String tableName, boolean isMainTable) {
-		//LOGGER.severe("Analzying table "+tableSchema+"."+tableName);
-		this.readTable(tableSchema, tableName, isMainTable);
-	}
-	
-	public void analzyeTable(String tableName, boolean isMainTable) {
-		this.analzyeTable(this.tableSchema, tableName, isMainTable);
-	}
-	
-	
-	public void analyzeQuery(String query) {
-		//LOGGER.severe("Analzying query "+query);
-		
-		// TODO
 	}
 	
 	protected boolean alreadyRead(String tableSchema, String tableName) {
@@ -80,13 +69,24 @@ public class PostgresqlAnalyzer {
 		return this.tablesFound.contains(testTableDoc);
 	}
 	
-	public List<TableDoc> getTableDocs() {
-		return new ArrayList<TableDoc>(this.tablesFound);
+	public void analyzeQuery(String query) throws PostgresqlException {
+		readReferencedTables(query);
+	}
+	
+	
+	public void analzyeTable(String tableName, boolean isMainTable) throws PostgresqlException {
+		this.analzyeTable(this.tableSchema, tableName, isMainTable);
+	}
+	
+	public void analzyeTable(String tableSchema, String tableName, boolean isMainTable) throws PostgresqlException {
+		//LOGGER.severe("Analzying table "+tableSchema+"."+tableName);
+		this.readTable(tableSchema, tableName, isMainTable);
 	}
 	
 	public void dispose() {
 		if (connection != null) {
 			try {
+				connection.rollback();
 				connection.close();
 			} catch (SQLException e) {
 				LOGGER.warning(e.getMessage());
@@ -97,7 +97,11 @@ public class PostgresqlAnalyzer {
 		}
 	}
 	
-	protected String quote(String str) {
+	public List<TableDoc> getTableDocs() {
+		return new ArrayList<TableDoc>(this.tablesFound);
+	}
+	
+	protected String quoteIdent(String str) throws PostgresqlException {
 		PreparedStatement stmt = null;
 		try {
 			stmt = connection.prepareStatement("select quote_ident(?) as q");
@@ -107,8 +111,7 @@ public class PostgresqlAnalyzer {
 			return rs.getString("q");
 			
 		} catch (SQLException e) {
-			LOGGER.log(Level.SEVERE, "Could not quote "+str, e);
-			throw new RuntimeException(e);
+			throw new PostgresqlException("Could not quote "+str, e);
 		} finally {
 			if (stmt != null) {
 				try {
@@ -120,7 +123,43 @@ public class PostgresqlAnalyzer {
 		}	
 	}
 	
-	protected void readTable(String tableSchema, String tableName, boolean isMainTable) {
+	public void readReferencedTables(String query) throws PostgresqlException {
+		String analyzableQuery = ExplainAnalyzer.createQuery(query);
+		LOGGER.severe(analyzableQuery);
+		Statement stmt = null;
+		try {
+			stmt = connection.createStatement();
+			ResultSet rs = stmt.executeQuery(analyzableQuery);
+			if (!rs.next()) {
+				throw new PostgresqlException("Could not fetch the EXPLAIN plan");
+			}
+			ExplainAnalyzer explainAnalyzer = new ExplainAnalyzer(rs.getString(1));
+			for (Table table: explainAnalyzer.getReferencedTables()) {
+				this.readTable(table.getTableSchema(), table.getTableName(), false);
+			}
+		} catch (SQLException e) {
+			throw new PostgresqlException("Could not fetch the EXPLAIN plan", e);
+		} finally {
+			if (stmt != null) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					LOGGER.log(Level.SEVERE, "could not close statement", e);
+				}
+			}
+		}	
+	}
+	
+	public void readReferencedTables(String tableSchema, String tableName) throws PostgresqlException {
+		StringBuilder queryBuilder = new StringBuilder()
+			.append("select * from ")
+			.append(quoteIdent(tableSchema))
+			.append(".")
+			.append(quoteIdent(tableName));
+		readReferencedTables(queryBuilder.toString());
+	}
+	
+	protected void readTable(String tableSchema, String tableName, boolean isMainTable) throws PostgresqlException {
 		if (alreadyRead(tableSchema, tableName)) {
 			return;
 		}
@@ -147,36 +186,41 @@ public class PostgresqlAnalyzer {
 				tableDoc.setTableName(rsTable.getString("relname"));
 				tableDoc.setTableSchema(rsTable.getString("nspname"));
 				tableDoc.setComment(rsTable.getString("description"));
+				tableDoc.setDefinition(rsTable.getString("definition"));
 				
 				String kind = rsTable.getString("kind");
 				tableDoc.setType(kind);
 				
 				// fetch columns for tables
-				if (kind != null && kind.equals("TABLE")) {
-					stmtColumns = connection.prepareStatement(
-							"select pa.attname, pt.typname, pd.description"
-							+" from pg_attribute pa"
-							+" join pg_type pt on pa.atttypid = pt.oid"
-							+" left join pg_description pd on pd.objoid = pa.attrelid and pd.objsubid=pa.attnum"
-							+" where pa.attrelid = ? and pa.attnum > 0");
-					stmtColumns.setInt(1, rsTable.getInt("oid"));
-					ResultSet rsColumns = stmtColumns.executeQuery();
-					
-					ArrayList<PropertyDoc> columnsDocs = new ArrayList<PropertyDoc>();
-					while (rsColumns.next()) {
-						PropertyDoc columnDoc = new PropertyDoc();
-						columnDoc.setComment(rsColumns.getString("description"));
-						columnDoc.setName(rsColumns.getString("attname"));
-						columnDoc.setType(rsColumns.getString("typname"));
-						columnsDocs.add(columnDoc);
+				if (kind != null) {
+					if (kind.equals("TABLE")) {
+						stmtColumns = connection.prepareStatement(
+								"select pa.attname, pt.typname, pd.description"
+								+" from pg_attribute pa"
+								+" join pg_type pt on pa.atttypid = pt.oid"
+								+" left join pg_description pd on pd.objoid = pa.attrelid and pd.objsubid=pa.attnum"
+								+" where pa.attrelid = ? and pa.attnum > 0");
+						stmtColumns.setInt(1, rsTable.getInt("oid"));
+						ResultSet rsColumns = stmtColumns.executeQuery();
+						
+						ArrayList<PropertyDoc> columnsDocs = new ArrayList<PropertyDoc>();
+						while (rsColumns.next()) {
+							PropertyDoc columnDoc = new PropertyDoc();
+							columnDoc.setComment(rsColumns.getString("description"));
+							columnDoc.setName(rsColumns.getString("attname"));
+							columnDoc.setType(rsColumns.getString("typname"));
+							columnsDocs.add(columnDoc);
+						}
+						tableDoc.setColumns(columnsDocs);
+						
+					} else if (kind.equals("VIEW")) {
+						this.readReferencedTables(rsTable.getString("nspname"), rsTable.getString("relname"));
 					}
-					tableDoc.setColumns(columnsDocs);
 				}
 				this.tablesFound.add(tableDoc);
 			}			
 		} catch (SQLException e) {
-			LOGGER.log(Level.SEVERE, "Counld not execute "+query, e);
-			throw new RuntimeException(e);
+			throw new PostgresqlException("Could not read table definition", e);
 		} finally {
 			if (stmtTable != null) {
 				try {

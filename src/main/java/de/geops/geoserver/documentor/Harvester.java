@@ -33,6 +33,8 @@ import de.geops.geoserver.documentor.info.SqlViewDoc.Parameter;
 import de.geops.geoserver.documentor.info.StoreDoc;
 import de.geops.geoserver.documentor.info.WorkspaceDoc;
 import de.geops.geoserver.documentor.info.WorkspaceFullDoc;
+import de.geops.geoserver.documentor.postgresql.PostgresqlAnalyzer;
+import de.geops.geoserver.documentor.postgresql.PostgresqlException;
 
 public class Harvester {
 
@@ -167,6 +169,8 @@ public class Harvester {
 					analyzer.analzyeTable(featureTypeInfo.getName(), true);	
 				}
 				featureTypeDoc.setRelatedTables(analyzer.getTableDocs());
+			} catch (PostgresqlException e) {
+				LOGGER.log(Level.SEVERE, "Could not analyze postgresql contents for feature "+featureTypeInfo.getName(), e);;
 			} finally {
 				if (analyzer != null) {
 					analyzer.dispose();
