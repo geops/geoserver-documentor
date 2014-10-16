@@ -14,4 +14,17 @@
 		<property name="order" value="35" />
 	</bean>
 	
+	<bean id="documentorRestConfigMapping" class="org.geoserver.rest.RESTMapping">
+	<property name="routes">
+	  <map>
+	  		<entry>
+	          <key><value>/documentor/workspaces/{workspace}</value></key>
+	          <value>documentorWorkspaceContentsFinder</value>
+	        </entry>
+	  </map>
+	</property>
+	</bean>	
+	
+	<bean id="documentorWorkspaceContentsFinder" class="de.geops.geoserver.documentor.rest.finder.WorkspaceContentsFinder" parent="abstractCatalogFinder"/>
+	
 </beans>

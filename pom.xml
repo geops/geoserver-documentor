@@ -100,6 +100,16 @@
 			<version>${geoserver.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.geoserver</groupId>
+			<artifactId>rest</artifactId>
+			<version>${geoserver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geoserver</groupId>
+			<artifactId>restconfig</artifactId>
+			<version>${geoserver.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>3.8.1</version>
