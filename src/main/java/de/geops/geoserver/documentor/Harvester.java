@@ -111,9 +111,13 @@ public class Harvester {
 				
 				SqlViewDoc sqlViewDoc = featureTypeDoc.getSqlView();
 				if (sqlViewDoc != null && sqlViewDoc.getSqlQuery() != null) {
-					analyzer.analyzeQuery(sqlViewDoc.getSqlQuery());
+					SqlViewQueryGenerator generator = new SqlViewQueryGenerator(sqlViewDoc);
+					String generatedQuery = generator.getParameterizedQuery();
+					if (generatedQuery != null) {
+						analyzer.analyzeQuery(generatedQuery);
+					}
 				} else {
-					analyzer.analzyeTable(featureTypeInfo.getName(), true);	
+					analyzer.analyzeTable(featureTypeInfo.getName(), true);	
 				}
 				featureTypeDoc.setRelatedTables(analyzer.getTableDocs());
 			} catch (PostgresqlException e) {

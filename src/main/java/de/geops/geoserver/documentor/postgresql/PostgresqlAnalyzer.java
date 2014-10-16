@@ -74,7 +74,7 @@ public class PostgresqlAnalyzer {
 	}
 	
 	
-	public void analzyeTable(String tableName, boolean isMainTable) throws PostgresqlException {
+	public void analyzeTable(String tableName, boolean isMainTable) throws PostgresqlException {
 		this.analzyeTable(this.tableSchema, tableName, isMainTable);
 	}
 	
