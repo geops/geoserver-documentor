@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
-	
- 
+
+
 	<bean id="documentorDocumentationIndexPage" class="org.geoserver.web.MenuPageInfo">
 		<property name="id" value="documentor.index" />
 		<property name="titleKey" value="DocumentationIndexPage.title" />
@@ -13,18 +13,33 @@
 		<property name="icon" value="img/book.png" />
 		<property name="order" value="35" />
 	</bean>
-	
+
 	<bean id="documentorRestConfigMapping" class="org.geoserver.rest.RESTMapping">
-	<property name="routes">
-	  <map>
-	  		<entry>
-	          <key><value>/documentor/workspaces/{workspace}</value></key>
-	          <value>documentorWorkspaceContentsFinder</value>
-	        </entry>
-	  </map>
-	</property>
-	</bean>	
-	
-	<bean id="documentorWorkspaceContentsFinder" class="de.geops.geoserver.documentor.rest.finder.WorkspaceContentsFinder" parent="abstractCatalogFinder"/>
-	
+		<property name="routes">
+			<map>
+				<entry>
+					<key>
+						<value>/documentor/workspaces/{workspace}</value>
+					</key>
+					<value>documentorWorkspaceContentsFinder</value>
+				</entry>
+				<entry>
+					<key>
+						<value>/documentor/complete</value>
+					</key>
+					<value>documentorCompleteDocumentationFinder</value>
+				</entry>
+			</map>
+		</property>
+	</bean>
+
+	<bean id="documentorWorkspaceContentsFinder"
+		class="de.geops.geoserver.documentor.rest.finder.WorkspaceContentsFinder"
+		parent="abstractCatalogFinder" />
+
+	<bean id="documentorCompleteDocumentationFinder"
+		class="de.geops.geoserver.documentor.rest.finder.CompleteDocumentationFinder">
+		<constructor-arg ref="catalog"/>
+	</bean>
+
 </beans>

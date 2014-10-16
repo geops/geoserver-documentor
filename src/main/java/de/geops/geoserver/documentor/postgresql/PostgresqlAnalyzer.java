@@ -125,7 +125,6 @@ public class PostgresqlAnalyzer {
 	
 	public void readReferencedTables(String query) throws PostgresqlException {
 		String analyzableQuery = ExplainAnalyzer.createQuery(query);
-		LOGGER.severe(analyzableQuery);
 		Statement stmt = null;
 		try {
 			stmt = connection.createStatement();

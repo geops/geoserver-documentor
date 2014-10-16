@@ -7,6 +7,7 @@ package de.geops.geoserver.documentor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,68 +49,6 @@ public class Harvester {
 	
 	public Harvester(Catalog catalog) {
 		this.catalog = catalog;
-	}
-	
-	public void ping() {
-		LOGGER.severe("Found "+catalog.getWorkspaces().size()+" workspaces");
-	}
-	
-	public List<WorkspaceDoc> getWorkspaces() {
-		ArrayList<WorkspaceDoc> workspaceList = new ArrayList<WorkspaceDoc>();
-		for (WorkspaceInfo wsInfo: catalog.getWorkspaces()) {
-			WorkspaceDoc workspace = new WorkspaceDoc();
-			workspace.setName(wsInfo.getName());
-			workspaceList.add(workspace);
-		}
-		return workspaceList;
-	}
-	
-	public WorkspaceFullDoc getWorkspaceFull(String workspaceName) {
-		WorkspaceFullDoc workspace = new WorkspaceFullDoc();
-		workspace.setName(workspaceName);
-		
-		//LOGGER.severe("getWorkspaceFull: "+workspaceName);
-		ArrayList<LayerDoc> layerList = new ArrayList<LayerDoc>();
-		List<LayerInfo> layerInfos = catalog.getLayers();
-		for(LayerInfo layerInfo: layerInfos) {
-			String layerWorkspaceName = layerInfo.getResource().getStore().getWorkspace().getName();
-			//LOGGER.severe("layerWorkspaceName: "+layerWorkspaceName);
-			if (layerWorkspaceName.equals(workspaceName)) {
-				layerList.add(collectLayerDoc(layerInfo));
-			}
-		}
-		workspace.setLayers(layerList);
-		
-		return workspace;
-	}
-	
-	protected LayerDoc collectLayerDoc(LayerInfo layerInfo) {
-		ResourceInfo resourceInfo = layerInfo.getResource();
-		StoreInfo storeInfo = resourceInfo.getStore();
-		
-		LayerDoc layer = new LayerDoc();
-		layer.setName(layerInfo.getName());
-		layer.setWorkspaceName(storeInfo.getWorkspace().getName());
-		layer.setTitle(resourceInfo.getTitle());
-		layer.setDescription(resourceInfo.getAbstract());
-		layer.setType(layerInfo.getType().toString().toLowerCase());
-		
-		layer.setStore(this.collectStoreDoc(storeInfo));
-		
-		if (resourceInfo instanceof FeatureTypeInfo) {
-			layer.setFeatureType(this.collectFeatureTypeDoc((FeatureTypeInfo) resourceInfo, storeInfo));
-
-		}
-
-		return layer;
-	}
-	
-	protected StoreDoc collectStoreDoc(StoreInfo storeInfo) {
-		StoreDoc storeDoc = new StoreDoc();
-		storeDoc.setType(storeInfo.getType());
-		storeDoc.setName(storeInfo.getName());
-		storeDoc.setDescription(storeInfo.getDescription());
-		return storeDoc;
 	}
 	
 	protected FeatureTypeDoc collectFeatureTypeDoc(FeatureTypeInfo featureTypeInfo, final StoreInfo storeInfo) {
@@ -179,5 +118,82 @@ public class Harvester {
 		}
 		
 		return featureTypeDoc;
+	}
+	
+	protected LayerDoc collectLayerDoc(LayerInfo layerInfo) {
+		ResourceInfo resourceInfo = layerInfo.getResource();
+		StoreInfo storeInfo = resourceInfo.getStore();
+		
+		LayerDoc layer = new LayerDoc();
+		layer.setName(layerInfo.getName());
+		layer.setWorkspaceName(storeInfo.getWorkspace().getName());
+		layer.setTitle(resourceInfo.getTitle());
+		layer.setDescription(resourceInfo.getAbstract());
+		layer.setType(layerInfo.getType().toString().toLowerCase());
+		
+		layer.setStore(this.collectStoreDoc(storeInfo));
+		
+		if (resourceInfo instanceof FeatureTypeInfo) {
+			layer.setFeatureType(this.collectFeatureTypeDoc((FeatureTypeInfo) resourceInfo, storeInfo));
+
+		}
+		return layer;
+	}
+	
+	protected StoreDoc collectStoreDoc(StoreInfo storeInfo) {
+		StoreDoc storeDoc = new StoreDoc();
+		storeDoc.setType(storeInfo.getType());
+		storeDoc.setName(storeInfo.getName());
+		storeDoc.setDescription(storeInfo.getDescription());
+		return storeDoc;
+	}; 
+	
+	public List<WorkspaceFullDoc> getComplete() {
+		HashMap<String, WorkspaceFullDoc> workspaceFullDocs = new HashMap<String, WorkspaceFullDoc>();
+		
+		List<LayerInfo> layerInfos = catalog.getLayers();
+		for(LayerInfo layerInfo: layerInfos) {
+			String layerWorkspaceName = layerInfo.getResource().getStore().getWorkspace().getName();
+			
+			if (!workspaceFullDocs.containsKey(layerWorkspaceName)) {
+				WorkspaceFullDoc newWorkspaceFull = new WorkspaceFullDoc();
+				newWorkspaceFull.setName(layerWorkspaceName);
+				workspaceFullDocs.put(layerWorkspaceName, newWorkspaceFull);
+			}
+			WorkspaceFullDoc wsFull = workspaceFullDocs.get(layerWorkspaceName);
+			wsFull.getLayers().add(collectLayerDoc(layerInfo));
+		}
+		return new ArrayList<WorkspaceFullDoc>(workspaceFullDocs.values());
+	}
+	
+	public WorkspaceFullDoc getWorkspaceFull(String workspaceName) {
+		WorkspaceFullDoc workspace = new WorkspaceFullDoc();
+		workspace.setName(workspaceName);
+		
+		ArrayList<LayerDoc> layerList = new ArrayList<LayerDoc>();
+		List<LayerInfo> layerInfos = catalog.getLayers();
+		for(LayerInfo layerInfo: layerInfos) {
+			String layerWorkspaceName = layerInfo.getResource().getStore().getWorkspace().getName();
+			if (layerWorkspaceName.equals(workspaceName)) {
+				layerList.add(collectLayerDoc(layerInfo));
+			}
+		}
+		workspace.setLayers(layerList);
+		
+		return workspace;
+	}
+	
+	public List<WorkspaceDoc> getWorkspaces() {
+		ArrayList<WorkspaceDoc> workspaceList = new ArrayList<WorkspaceDoc>();
+		for (WorkspaceInfo wsInfo: catalog.getWorkspaces()) {
+			WorkspaceDoc workspace = new WorkspaceDoc();
+			workspace.setName(wsInfo.getName());
+			workspaceList.add(workspace);
+		}
+		return workspaceList;
+	}
+	
+	public void ping() {
+		LOGGER.severe("Found "+catalog.getWorkspaces().size()+" workspaces");
 	}
 }
