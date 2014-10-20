@@ -15,8 +15,14 @@ public class DocumentationIndexPage extends GeoServerSecuredPage {
 	public DocumentationIndexPage() {
 		Harvester harvester = new Harvester();
 		
+		@SuppressWarnings("unchecked")
 		ListView listview = new ListView("listview", harvester.getWorkspaces()) {
-		    protected void populateItem(ListItem item) {
+		    /**
+			 * 
+			 */
+			private static final long serialVersionUID = 2974513833506276491L;
+
+			protected void populateItem(ListItem item) {
 		    	WorkspaceDoc wi = (WorkspaceDoc) item.getModelObject();
 				BookmarkablePageLink link = new BookmarkablePageLink("link", WorkspacePage.class);
 				link.setParameter("workspaceName", wi.getName());

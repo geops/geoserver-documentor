@@ -2,7 +2,6 @@ package de.geops.geoserver.documentor.web;
 
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.basic.Label;
-import org.geoserver.web.GeoServerBasePage;
 import org.geoserver.web.GeoServerSecuredPage;
 
 public class WorkspacePage extends GeoServerSecuredPage {

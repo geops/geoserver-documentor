@@ -10,6 +10,9 @@ build: git-version readme
 
 package: build
 
+test:
+	$(MVN) test
+
 readme:
 	cp README.md src/main/resources/README.documentor.md
 
