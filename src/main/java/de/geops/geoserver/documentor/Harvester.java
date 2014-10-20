@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
+import org.geoserver.catalog.KeywordInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.MetadataMap;
 import org.geoserver.catalog.ResourceInfo;
@@ -45,14 +46,27 @@ public class Harvester {
 	
 	private static final Logger LOGGER = Logging.getLogger(Harvester.class);
 	
+	/**
+	 * 
+	 */
 	public Harvester() {
 		catalog = GeoServerApplication.get().getCatalog();
 	}
 	
+	/**
+	 * 
+	 * @param catalog
+	 */
 	public Harvester(Catalog catalog) {
 		this.catalog = catalog;
 	}
 	
+	/**
+	 * 
+	 * @param featureTypeInfo
+	 * @param storeInfo
+	 * @return
+	 */
 	protected FeatureTypeDoc collectFeatureTypeDoc(FeatureTypeInfo featureTypeInfo, final StoreInfo storeInfo) {
 		FeatureTypeDoc featureTypeDoc = new FeatureTypeDoc();
 			
@@ -132,16 +146,32 @@ public class Harvester {
 		return featureTypeDoc;
 	}
 	
+	/**
+	 * 
+	 * @param layerInfo
+	 * @return
+	 */
 	protected LayerDoc collectLayerDoc(LayerInfo layerInfo) {
 		ResourceInfo resourceInfo = layerInfo.getResource();
 		StoreInfo storeInfo = resourceInfo.getStore();
 		
 		LayerDoc layer = new LayerDoc();
-		layer.setName(layerInfo.getName());
+		layer.setName(resourceInfo.getName());
 		layer.setWorkspaceName(storeInfo.getWorkspace().getName());
 		layer.setTitle(resourceInfo.getTitle());
 		layer.setDescription(resourceInfo.getAbstract());
 		layer.setType(layerInfo.getType().toString().toLowerCase());
+		layer.setAdvertized(layerInfo.isAdvertised());
+		layer.setEnabled(layerInfo.isEnabled());
+		
+		ArrayList<String> keywordList = new ArrayList<String>();
+		List<KeywordInfo> resourceKeywords = resourceInfo.getKeywords();
+		if (resourceKeywords != null) {
+			for (KeywordInfo resourceKeyword: resourceKeywords) {
+				keywordList.add(resourceKeyword.getValue());
+			}
+		}
+		layer.setKeywords(keywordList);		
 		
 		layer.setStore(this.collectStoreDoc(storeInfo));
 		
@@ -152,6 +182,11 @@ public class Harvester {
 		return layer;
 	}
 	
+	/**
+	 * 
+	 * @param storeInfo
+	 * @return
+	 */
 	protected StoreDoc collectStoreDoc(StoreInfo storeInfo) {
 		StoreDoc storeDoc = new StoreDoc();
 		storeDoc.setType(storeInfo.getType());
@@ -160,6 +195,10 @@ public class Harvester {
 		return storeDoc;
 	}; 
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public List<WorkspaceFullDoc> getComplete() {
 		HashMap<String, WorkspaceFullDoc> workspaceFullDocs = new HashMap<String, WorkspaceFullDoc>();
 		
@@ -178,6 +217,11 @@ public class Harvester {
 		return new ArrayList<WorkspaceFullDoc>(workspaceFullDocs.values());
 	}
 	
+	/**
+	 * 
+	 * @param workspaceName
+	 * @return
+	 */
 	public WorkspaceFullDoc getWorkspaceFull(String workspaceName) {
 		WorkspaceFullDoc workspace = new WorkspaceFullDoc();
 		workspace.setName(workspaceName);
@@ -195,6 +239,10 @@ public class Harvester {
 		return workspace;
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public List<WorkspaceDoc> getWorkspaces() {
 		ArrayList<WorkspaceDoc> workspaceList = new ArrayList<WorkspaceDoc>();
 		for (WorkspaceInfo wsInfo: catalog.getWorkspaces()) {
@@ -203,9 +251,5 @@ public class Harvester {
 			workspaceList.add(workspace);
 		}
 		return workspaceList;
-	}
-	
-	public void ping() {
-		LOGGER.severe("Found "+catalog.getWorkspaces().size()+" workspaces");
 	}
 }

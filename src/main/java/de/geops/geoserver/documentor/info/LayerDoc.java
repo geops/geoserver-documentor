@@ -1,6 +1,8 @@
 package de.geops.geoserver.documentor.info;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LayerDoc implements Serializable {
 
@@ -22,6 +24,20 @@ public class LayerDoc implements Serializable {
 	protected FeatureTypeDoc featureType;
 
 	protected StoreDoc store;
+	
+	protected boolean isAdvertized;
+	
+	protected boolean isEnabled;
+	
+	public List<String> getKeywords() {
+		return keywords;
+	}
+
+	public void setKeywords(List<String> keywords) {
+		this.keywords = keywords;
+	}
+
+	protected List<String> keywords = new ArrayList<String>();
 
 	public String getDescription() {
 		return description;
@@ -51,8 +67,24 @@ public class LayerDoc implements Serializable {
 		return workspaceName;
 	}
 
+	public boolean isAdvertized() {
+		return isAdvertized;
+	}
+
+	public boolean isEnabled() {
+		return isEnabled;
+	}
+
+	public void setAdvertized(boolean isAdvertized) {
+		this.isAdvertized = isAdvertized;
+	}
+
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public void setEnabled(boolean isEnabled) {
+		this.isEnabled = isEnabled;
 	}
 
 	public void setFeatureType(FeatureTypeDoc featureTypeDoc) {

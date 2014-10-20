@@ -13,7 +13,11 @@ class SqlViewQueryGenerator {
 		this.sqlViewDoc = sqlViewDoc;
 	}
 	
-	
+	/**
+	 * Return the sql query with the default parameters filled in
+	 * 
+	 * @return String
+	 */
 	String getParameterizedQuery() {
 		String query = this.sqlViewDoc.getSqlQuery();
 		List<SqlViewParameterDoc> params = this.sqlViewDoc.getParameters(); 
