@@ -194,9 +194,10 @@ public class PostgresqlAnalyzer {
 				if (kind != null) {
 					if (kind.equals("TABLE")) {
 						stmtColumns = connection.prepareStatement(
-								"select pa.attname, pt.typname, pd.description"
+								"select pa.attname, coalesce(parent_type.typname, pt.typname)::text||repeat('[]', pa.attndims) as typname, pd.description"
 								+" from pg_attribute pa"
 								+" join pg_type pt on pa.atttypid = pt.oid"
+								+" left join pg_type parent_type on pt.typelem != 0 and pt.typelem = parent_type.oid"
 								+" left join pg_description pd on pd.objoid = pa.attrelid and pd.objsubid=pa.attnum"
 								+" where pa.attrelid = ? and pa.attnum > 0");
 						stmtColumns.setInt(1, rsTable.getInt("oid"));
