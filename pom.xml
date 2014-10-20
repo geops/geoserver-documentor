@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.geops</groupId>
   <artifactId>geoserver-documentor</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-SNAPSHOT</version>
   
   	<properties>
 		<geoserver.version>2.4.8</geoserver.version>
