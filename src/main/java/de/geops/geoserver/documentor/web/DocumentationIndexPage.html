@@ -7,6 +7,33 @@
 					<li>
 						<fieldset style="margin-top: 1em;">
 							<legend>
+								<span><wicket:message key="buildInformation">Build Information</wicket:message></span>
+							</legend>
+							<ul>
+								<li><label for="documentorVersion"><wicket:message
+											key="documentorVersion">Version</wicket:message></label> <span
+									id="documentorVersion"> <span
+										wicket:id="documentorVersion"></span>
+								</span></li>
+								<li><label for="documentorGitVersion"><wicket:message
+											key="documentorGitVersion">Version</wicket:message></label> <span
+									id="documentorGitVersion"> <span
+										wicket:id="documentorGitVersion"></span>
+								</span></li>
+							</ul>
+						</fieldset>
+					</li>
+					<li>
+						<fieldset style="margin-top: 1em;">
+							<legend>
+								<span><wicket:message key="readme">Readme</wicket:message></span>
+							</legend>
+							<pre wicket:id="readme"></pre>
+						</fieldset>
+					</li>
+					<li>
+						<fieldset style="margin-top: 1em;">
+							<legend>
 								<span><wicket:message key="general">General</wicket:message></span>
 							</legend>
 							<ul>
@@ -20,7 +47,8 @@
 								<span><wicket:message key="workspaces">Workspaces</wicket:message></span>
 							</legend>
 							<ul>
-								<li wicket:id="listview"><a wicket:id="link"><span wicket:id="workspaceName"></span></a></li>
+								<li wicket:id="listview"><a wicket:id="link"><span
+										wicket:id="workspaceName"></span></a></li>
 							</ul>
 						</fieldset>
 					</li>

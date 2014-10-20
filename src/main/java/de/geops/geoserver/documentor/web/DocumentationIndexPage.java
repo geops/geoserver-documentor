@@ -6,6 +6,7 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.geoserver.web.GeoServerSecuredPage;
 
+import de.geops.geoserver.documentor.ExtensionInfo;
 import de.geops.geoserver.documentor.Harvester;
 import de.geops.geoserver.documentor.info.WorkspaceDoc;
 
@@ -25,6 +26,10 @@ public class DocumentationIndexPage extends GeoServerSecuredPage {
 		};
 		add(listview);
 
+		ExtensionInfo info = new ExtensionInfo();
+		add(new Label("documentorVersion", info.getVersion()));
+		add(new Label("documentorGitVersion", info.getGitVersion()));
+		add(new Label("readme", info.getReadme()));
 	}
 
 	public String getAjaxIndicatorMarkupId() {
