@@ -2,12 +2,14 @@ package de.geops.geoserver.documentor.directive;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.Set;
+//import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.geotools.util.logging.Logging;
+//import org.geotools.util.logging.Logging;
 
 /**
  * implementation of the domain-specific description directives used to
@@ -33,7 +35,7 @@ import org.geotools.util.logging.Logging;
  */
 public class DirectiveParser {
 
-	private static final Logger LOGGER = Logging.getLogger(DirectiveParser.class);
+	//private static final Logger LOGGER = Logging.getLogger(DirectiveParser.class);
 
 	public static String markerName = "documentor";
 	
@@ -41,6 +43,8 @@ public class DirectiveParser {
 	final private HashMap<String, ArrayList<Directive>> directives;
 	
 	private static final String DIRECTIVE_IGNORE = "ignore"; 
+	private static final String DIRECTIVE_IGNORE_REF = "ignore-ref"; 
+	private static final String DIRECTIVE_INCLUDE_REF = "include-ref"; 
 	
 	
 	// static private Pattern directivePattern = Pattern.compile("\\[\\s*@documentor\\s+([^\\]]+)\\]");
@@ -57,9 +61,30 @@ public class DirectiveParser {
 	 * @return
 	 */
 	public String getClearedInput() {
+		if (this.input == null) {
+			return null;
+		}
 		return this.input.replaceAll(directivePattern.pattern(), "");
 	}
 
+	/**
+	 * 
+	 * @param directiveName
+	 * @return
+	 */
+	private Set<String> getDirectiveArguments(String directiveName) {
+		HashSet<String> results = new HashSet<String>();
+		if (this.directives.containsKey(directiveName)) {
+			for (Directive directive: this.directives.get(directiveName)) {
+				String value = directive.getArgument();
+				if (value != null && !value.equals("")) {
+					results.add(value);
+				}
+			}
+		}
+		return results;
+	}
+	
 	/**
 	 * 
 	 * @return
@@ -78,8 +103,37 @@ public class DirectiveParser {
 	 * 
 	 * @return
 	 */
+	public Set<String> getIgnoreReferences() {
+		return getDirectiveArguments(DIRECTIVE_IGNORE_REF);
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public Set<String> getIncludeReferences() {
+		return getDirectiveArguments(DIRECTIVE_INCLUDE_REF);
+	}
+	
+	/**
+	 * returns true if the current entity should be ignored
+	 * 
+	 * @return
+	 */
+	public boolean ignoreThisEntity() {
+		return this.directives.containsKey(DIRECTIVE_IGNORE);
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
 	private HashMap<String, ArrayList<Directive>> loadDirectives() {
 		HashMap<String, ArrayList<Directive>> directives = new HashMap<String, ArrayList<Directive>>();
+		if (this.input == null) {
+			return directives;
+		}
+		
 		Matcher matcher = DirectiveParser.directivePattern.matcher(this.input);
 		while (matcher.find()) {
 			String fullDirectiveText = matcher.group(1);
@@ -100,14 +154,5 @@ public class DirectiveParser {
 			directives.get(directive.getName()).add(directive);
 		}
 		return directives;
-	}
-	
-	/**
-	 * returns true if the current entity should be ignored
-	 * 
-	 * @return
-	 */
-	public boolean ignoreThisEntity() {
-		return this.directives.containsKey(DIRECTIVE_IGNORE);
 	}
 }

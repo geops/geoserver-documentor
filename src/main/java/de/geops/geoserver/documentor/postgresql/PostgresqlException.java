@@ -2,8 +2,23 @@ package de.geops.geoserver.documentor.postgresql;
 
 public class PostgresqlException extends Exception {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7774750315887573876L;
+
 	public PostgresqlException() {
 		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public PostgresqlException(String message) {
+		super(message);
+		// TODO Auto-generated constructor stub
+	}
+
+	public PostgresqlException(String message, Throwable cause) {
+		super(message, cause);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -13,24 +28,9 @@ public class PostgresqlException extends Exception {
 		// TODO Auto-generated constructor stub
 	}
 
-	public PostgresqlException(String message, Throwable cause) {
-		super(message, cause);
-		// TODO Auto-generated constructor stub
-	}
-
-	public PostgresqlException(String message) {
-		super(message);
-		// TODO Auto-generated constructor stub
-	}
-
 	public PostgresqlException(Throwable cause) {
 		super(cause);
 		// TODO Auto-generated constructor stub
 	}
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7774750315887573876L;
 
 }

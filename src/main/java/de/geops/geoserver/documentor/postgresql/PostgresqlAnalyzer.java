@@ -21,10 +21,27 @@ import org.geotools.data.Transaction;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.util.logging.Logging;
 
+import de.geops.geoserver.documentor.directive.DirectiveParser;
 import de.geops.geoserver.documentor.info.PropertyDoc;
 import de.geops.geoserver.documentor.info.TableDoc;
-import de.geops.geoserver.documentor.postgresql.ExplainAnalyzer.Table;
 
+/**
+ * 
+ * Allows the following directives:
+ * 
+ *   ignore
+ *   	ignore this table
+ *   
+ *   include-ref table:public.mytable
+ *      include the table in the documentation list
+ *      
+ *   ignore-ref table:public.mytable
+ *      ignore the reference to the table
+ *      
+ * 
+ * @author nico
+ *
+ */
 public class PostgresqlAnalyzer {
 	
 	private static final Logger LOGGER = Logging.getLogger(PostgresqlAnalyzer.class);
@@ -35,6 +52,7 @@ public class PostgresqlAnalyzer {
 	private final Connection connection;
 	
 	protected HashSet<TableDoc> tablesFound = new HashSet<TableDoc>();
+	protected HashSet<TableDoc> tablesIgnored = new HashSet<TableDoc>();
 
 	public PostgresqlAnalyzer(StoreInfo storeInfo) throws PostgresqlException {
 		if (!storeInfo.getType().equals("PostGIS")) {
@@ -62,17 +80,9 @@ public class PostgresqlAnalyzer {
 		}
 	}
 	
-	protected boolean alreadyRead(String tableSchema, String tableName) {
-		TableDoc testTableDoc = new TableDoc();
-		testTableDoc.setTableName(tableName);
-		testTableDoc.setTableSchema(tableSchema);
-		return this.tablesFound.contains(testTableDoc);
-	}
-	
 	public void analyzeQuery(String query) throws PostgresqlException {
 		readReferencedTables(query);
 	}
-	
 	
 	public void analyzeTable(String tableName, boolean isMainTable) throws PostgresqlException {
 		this.analzyeTable(this.tableSchema, tableName, isMainTable);
@@ -97,8 +107,77 @@ public class PostgresqlAnalyzer {
 		}
 	}
 	
+	
 	public List<TableDoc> getTableDocs() {
 		return new ArrayList<TableDoc>(this.tablesFound);
+	}
+	
+	/**
+	 * handle all directives which must be handled after the current entity is parsed.
+	 * 
+	 * @param dp
+	 * @throws PostgresqlException 
+	 */
+	private void handleAfterDirectives(DirectiveParser directiveParser) throws PostgresqlException {
+		// handle include directives
+		for (String includeRef: directiveParser.getIncludeReferences()) {
+			if (includeRef.startsWith("table:")) {
+				String includeTableFullName = includeRef.replaceFirst("table:", "");
+				try {
+					Table table = Table.fromString(includeTableFullName);
+					readTable(table.getTableSchema(), table.getTableName(), false);
+				} catch (IllegalArgumentException e) {
+					LOGGER.log(Level.WARNING, "Could not parse the table name form include directive: "+includeTableFullName, e);
+				}
+			}
+		}
+		// handle ignore directives
+		for (String ignoreRef: directiveParser.getIgnoreReferences()) {
+			if (ignoreRef.startsWith("table:")) {
+				String ignoreTableFullName = ignoreRef.replaceFirst("table:", "");
+				try {
+					Table table = Table.fromString(ignoreTableFullName);
+						ignoreTable(table.getTableSchema(), table.getTableName());
+					
+				} catch (IllegalArgumentException e) {
+					LOGGER.log(Level.WARNING, "Could not parse the table name form ignore directive: "+ignoreTableFullName, e);
+				}
+			}
+		}	
+	}
+	
+	/**
+	 * handle all directives which must be handled before the current entity is parsed.
+	 * 
+	 * @param dp
+	 * @return boolean if the parsing of this entity should continue
+	 */
+	private boolean handleBeforeDirectives(DirectiveParser directiveParser) {
+		return directiveParser.ignoreThisEntity();	
+	}
+	
+	protected void ignoreTable(String tableSchema, String tableName) {
+		TableDoc testTableDoc = new TableDoc();
+		testTableDoc.setTableName(tableName);
+		testTableDoc.setTableSchema(tableSchema);
+		
+		this.tablesIgnored.add(testTableDoc);
+		this.tablesFound.remove(testTableDoc);
+		
+	}
+	
+	protected boolean isAlreadyRead(String tableSchema, String tableName) {
+		TableDoc testTableDoc = new TableDoc();
+		testTableDoc.setTableName(tableName);
+		testTableDoc.setTableSchema(tableSchema);
+		return this.tablesFound.contains(testTableDoc);
+	}
+	
+	protected boolean isIgnored(String tableSchema, String tableName) {
+		TableDoc testTableDoc = new TableDoc();
+		testTableDoc.setTableName(tableName);
+		testTableDoc.setTableSchema(tableSchema);
+		return this.tablesIgnored.contains(testTableDoc);
 	}
 	
 	protected String quoteIdent(String str) throws PostgresqlException {
@@ -122,6 +201,7 @@ public class PostgresqlAnalyzer {
 			}
 		}	
 	}
+	
 	
 	public void readReferencedTables(String query) throws PostgresqlException {
 		String analyzableQuery = ExplainAnalyzer.createQuery(query);
@@ -158,8 +238,15 @@ public class PostgresqlAnalyzer {
 		readReferencedTables(queryBuilder.toString());
 	}
 	
+	/**
+	 * 
+	 * @param tableSchema
+	 * @param tableName
+	 * @param isMainTable
+	 * @throws PostgresqlException
+	 */
 	protected void readTable(String tableSchema, String tableName, boolean isMainTable) throws PostgresqlException {
-		if (alreadyRead(tableSchema, tableName)) {
+		if (isAlreadyRead(tableSchema, tableName) || isIgnored(tableSchema, tableName)) {
 			return;
 		}
 		
@@ -181,46 +268,61 @@ public class PostgresqlAnalyzer {
 			stmtTable.setString(1, tableSchema);
 			stmtTable.setString(2, tableName);
 			ResultSet rsTable = stmtTable.executeQuery();
-			if (rsTable.next()) {
-				TableDoc tableDoc = new TableDoc();
-				tableDoc.setMainTable(isMainTable);
-				tableDoc.setTableName(rsTable.getString("relname"));
-				tableDoc.setTableSchema(rsTable.getString("nspname"));
-				tableDoc.setComment(rsTable.getString("description"));
-				tableDoc.setDefinition(rsTable.getString("definition"));
-				
-				String kind = rsTable.getString("kind");
-				tableDoc.setType(kind);
-				
-				// fetch columns for tables
-				if (kind != null) {
-					if (kind.equals("TABLE")) {
-						stmtColumns = connection.prepareStatement(
-								"select pa.attname, coalesce(parent_type.typname, pt.typname)::text||repeat('[]', pa.attndims) as typname, pd.description"
-								+" from pg_attribute pa"
-								+" join pg_type pt on pa.atttypid = pt.oid"
-								+" left join pg_type parent_type on pt.typelem != 0 and pt.typelem = parent_type.oid"
-								+" left join pg_description pd on pd.objoid = pa.attrelid and pd.objsubid=pa.attnum"
-								+" where pa.attrelid = ? and pa.attnum > 0");
-						stmtColumns.setInt(1, rsTable.getInt("oid"));
-						ResultSet rsColumns = stmtColumns.executeQuery();
+			if (!rsTable.next()) {
+				LOGGER.warning("Did not find relation "+tableSchema+"."+tableName);
+				return;
+			}
+			
+			//analyze the comment for any documentor directives
+			String comment = rsTable.getString("description");
+			DirectiveParser directiveParser = new DirectiveParser(comment);
+			comment = directiveParser.getClearedInput(); // remove all directives from the comment
+			if (handleBeforeDirectives(directiveParser)) {
+				LOGGER.fine("Ignoring relation "+tableSchema+"."+tableName+" because of ignore directive");
+				return;
+			}	
 						
-						ArrayList<PropertyDoc> columnsDocs = new ArrayList<PropertyDoc>();
-						while (rsColumns.next()) {
-							PropertyDoc columnDoc = new PropertyDoc();
-							columnDoc.setComment(rsColumns.getString("description"));
-							columnDoc.setName(rsColumns.getString("attname"));
-							columnDoc.setType(rsColumns.getString("typname"));
-							columnsDocs.add(columnDoc);
-						}
-						tableDoc.setColumns(columnsDocs);
-						
-					} else if (kind.equals("VIEW")) {
-						this.readReferencedTables(rsTable.getString("nspname"), rsTable.getString("relname"));
+			TableDoc tableDoc = new TableDoc();
+			tableDoc.setMainTable(isMainTable);
+			tableDoc.setTableName(rsTable.getString("relname"));
+			tableDoc.setTableSchema(rsTable.getString("nspname"));
+			tableDoc.setDefinition(rsTable.getString("definition"));
+			tableDoc.setComment(comment);
+			
+			String kind = rsTable.getString("kind");
+			tableDoc.setType(kind);
+			
+			// fetch columns for tables
+			if (kind != null) {
+				if (kind.equals("TABLE")) {
+					stmtColumns = connection.prepareStatement(
+							"select pa.attname, coalesce(parent_type.typname, pt.typname)::text||repeat('[]', pa.attndims) as typname, pd.description"
+							+" from pg_attribute pa"
+							+" join pg_type pt on pa.atttypid = pt.oid"
+							+" left join pg_type parent_type on pt.typelem != 0 and pt.typelem = parent_type.oid"
+							+" left join pg_description pd on pd.objoid = pa.attrelid and pd.objsubid=pa.attnum"
+							+" where pa.attrelid = ? and pa.attnum > 0");
+					stmtColumns.setInt(1, rsTable.getInt("oid"));
+					ResultSet rsColumns = stmtColumns.executeQuery();
+					
+					ArrayList<PropertyDoc> columnsDocs = new ArrayList<PropertyDoc>();
+					while (rsColumns.next()) {
+						PropertyDoc columnDoc = new PropertyDoc();
+						columnDoc.setComment(rsColumns.getString("description"));
+						columnDoc.setName(rsColumns.getString("attname"));
+						columnDoc.setType(rsColumns.getString("typname"));
+						columnsDocs.add(columnDoc);
 					}
+					tableDoc.setColumns(columnsDocs);
+					
+				} else if (kind.equals("VIEW")) {
+					this.readReferencedTables(rsTable.getString("nspname"), rsTable.getString("relname"));
 				}
-				this.tablesFound.add(tableDoc);
-			}			
+			}
+			this.tablesFound.add(tableDoc);	
+			
+			handleAfterDirectives(directiveParser);
+			
 		} catch (SQLException e) {
 			throw new PostgresqlException("Could not read table definition", e);
 		} finally {

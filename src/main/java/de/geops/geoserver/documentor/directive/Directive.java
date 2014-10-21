@@ -6,10 +6,8 @@ public class Directive {
 
 	private String argument;
 
-	public Directive(String name, String argument) {
+	public Directive() {
 		super();
-		this.setName(name);
-		this.setArgument(argument);
 	}
 	
 	public Directive(String name) {
@@ -17,8 +15,10 @@ public class Directive {
 		this.setName(name);
 	}
 	
-	public Directive() {
+	public Directive(String name, String argument) {
 		super();
+		this.setName(name);
+		this.setArgument(argument);
 	}
 	
 	public String getArgument() {
