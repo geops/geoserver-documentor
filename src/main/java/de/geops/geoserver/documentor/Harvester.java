@@ -131,7 +131,7 @@ public class Harvester {
 						analyzer.analyzeQuery(generatedQuery);
 					}
 				} else {
-					analyzer.analyzeTable(featureTypeInfo.getName(), true);	
+					analyzer.analyzeTable(featureTypeInfo.getNativeName(), true);	
 				}
 				featureTypeDoc.setRelatedTables(analyzer.getTableDocs());
 			} catch (PostgresqlException e) {
@@ -142,7 +142,6 @@ public class Harvester {
 				}
 			}
 		}
-		
 		return featureTypeDoc;
 	}
 	
