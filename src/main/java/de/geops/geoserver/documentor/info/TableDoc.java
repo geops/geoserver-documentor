@@ -12,6 +12,12 @@ public class TableDoc {
 	protected boolean isMainTable = false;
 	protected List<PropertyDoc> columns;
 
+	/**
+	 * only compares by name and schema. 
+	 * 
+	 * this is the desired behavior and is expected to work this way in the postgresqlanalyzer
+	 * 
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -58,6 +64,11 @@ public class TableDoc {
 		return type;
 	}
 
+	/**
+	 * only includes by name and schema. 
+	 * 
+	 * this is the desired behavior and is expected to work this way in the postgresqlanalyzer
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;

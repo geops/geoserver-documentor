@@ -93,6 +93,11 @@ public class PostgresqlAnalyzer {
 		this.readTable(tableSchema, tableName, isMainTable);
 	}
 	
+	/**
+	 * shutdown all db and store connections
+	 * 
+	 * must be called before the object goes out of scope
+	 */
 	public void dispose() {
 		if (connection != null) {
 			try {
