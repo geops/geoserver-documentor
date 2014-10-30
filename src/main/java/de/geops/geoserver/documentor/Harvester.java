@@ -156,6 +156,7 @@ public class Harvester {
 		
 		LayerDoc layer = new LayerDoc();
 		layer.setName(resourceInfo.getName());
+		layer.setNativeName(resourceInfo.getNativeName());
 		layer.setWorkspaceName(storeInfo.getWorkspace().getName());
 		layer.setTitle(resourceInfo.getTitle());
 		layer.setDescription(resourceInfo.getAbstract());

@@ -12,6 +12,8 @@ public class LayerDoc implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	protected String name;
+	
+	protected String nativeName;
 
 	protected String workspaceName;
 
@@ -24,31 +26,31 @@ public class LayerDoc implements Serializable {
 	protected FeatureTypeDoc featureType;
 
 	protected StoreDoc store;
-	
+
 	protected boolean isAdvertized;
-	
+
 	protected boolean isEnabled;
 	
-	public List<String> getKeywords() {
-		return keywords;
-	}
-
-	public void setKeywords(List<String> keywords) {
-		this.keywords = keywords;
-	}
-
 	protected List<String> keywords = new ArrayList<String>();
-
+	
 	public String getDescription() {
 		return description;
 	}
-
+	
 	public FeatureTypeDoc getFeatureType() {
 		return featureType;
 	}
 
+	public List<String> getKeywords() {
+		return keywords;
+	}
+
 	public String getName() {
 		return name;
+	}
+
+	public String getNativeName() {
+		return nativeName;
 	}
 
 	public StoreDoc getStore() {
@@ -91,8 +93,16 @@ public class LayerDoc implements Serializable {
 		this.featureType = featureTypeDoc;
 	}
 
+	public void setKeywords(List<String> keywords) {
+		this.keywords = keywords;
+	}
+
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public void setNativeName(String nativeName) {
+		this.nativeName = nativeName;
 	}
 
 	public void setStore(StoreDoc storeDoc) {
