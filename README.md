@@ -29,4 +29,5 @@ java.util.EmptyStackException
 
 
 --> http://stackoverflow.com/questions/13804878/spring-batch-spring-batch-admin-project
+    https://jira.codehaus.org/browse/JETTISON-70
     Upgrade the jettison jar 1.3.x. There is an issue with 1.0.x
