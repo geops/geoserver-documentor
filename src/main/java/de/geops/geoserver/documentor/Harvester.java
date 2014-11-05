@@ -206,7 +206,7 @@ public class Harvester {
 				// TODO: find workspace directly instead of doing String manipulation
 				String prefixedName = pubLayerInfo.prefixedName();
 				if (prefixedName != null && prefixedName.indexOf(":") != -1) {
-					layer.setWorkspaceName(prefixedName.substring(prefixedName.indexOf(":")));
+					layer.setWorkspaceName(prefixedName.substring(0, prefixedName.indexOf(":")));
 				}
 				layerList.add(layer);
 			}
