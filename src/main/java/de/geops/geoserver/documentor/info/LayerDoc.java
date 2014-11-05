@@ -1,21 +1,16 @@
 package de.geops.geoserver.documentor.info;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LayerDoc implements Serializable {
+public class LayerDoc extends LayerBaseDoc {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	protected String name;
-	
 	protected String nativeName;
-
-	protected String workspaceName;
 
 	protected String title;
 
@@ -33,20 +28,13 @@ public class LayerDoc implements Serializable {
 	
 	protected List<String> keywords = new ArrayList<String>();
 	
-	public String getDescription() {
-		return description;
-	}
-	
+
 	public FeatureTypeDoc getFeatureType() {
 		return featureType;
 	}
 
 	public List<String> getKeywords() {
 		return keywords;
-	}
-
-	public String getName() {
-		return name;
 	}
 
 	public String getNativeName() {
@@ -57,16 +45,8 @@ public class LayerDoc implements Serializable {
 		return store;
 	}
 
-	public String getTitle() {
-		return title;
-	}
-
 	public String getType() {
 		return type;
-	}
-
-	public String getWorkspaceName() {
-		return workspaceName;
 	}
 
 	public boolean isAdvertized() {
@@ -81,10 +61,6 @@ public class LayerDoc implements Serializable {
 		this.isAdvertized = isAdvertized;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
 	public void setEnabled(boolean isEnabled) {
 		this.isEnabled = isEnabled;
 	}
@@ -97,9 +73,6 @@ public class LayerDoc implements Serializable {
 		this.keywords = keywords;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public void setNativeName(String nativeName) {
 		this.nativeName = nativeName;
@@ -109,16 +82,8 @@ public class LayerDoc implements Serializable {
 		this.store = storeDoc;
 	}
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
 	public void setType(String type) {
 		this.type = type;
-	}
-
-	public void setWorkspaceName(String workspaceName) {
-		this.workspaceName = workspaceName;
 	}
 
 }

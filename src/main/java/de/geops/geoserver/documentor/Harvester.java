@@ -7,7 +7,6 @@ package de.geops.geoserver.documentor;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,8 +14,10 @@ import java.util.logging.Logger;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.KeywordInfo;
+import org.geoserver.catalog.LayerGroupInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.MetadataMap;
+import org.geoserver.catalog.PublishedInfo;
 import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.WorkspaceInfo;
@@ -29,8 +30,10 @@ import org.geotools.util.logging.Logging;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 
+import de.geops.geoserver.documentor.info.Entity;
 import de.geops.geoserver.documentor.info.FeatureTypeDoc;
 import de.geops.geoserver.documentor.info.LayerDoc;
+import de.geops.geoserver.documentor.info.LayerGroupDoc;
 import de.geops.geoserver.documentor.info.PropertyDoc;
 import de.geops.geoserver.documentor.info.SqlViewDoc;
 import de.geops.geoserver.documentor.info.SqlViewParameterDoc;
@@ -182,6 +185,36 @@ public class Harvester {
 		return layer;
 	}
 	
+	protected LayerGroupDoc collectLayerGroupDoc(LayerGroupInfo layerGroupInfo) {
+		LayerGroupDoc layerGroupDoc = new LayerGroupDoc();
+		layerGroupDoc.setName(layerGroupInfo.getName());
+		layerGroupDoc.setTitle(layerGroupInfo.getTitle());
+		layerGroupDoc.setDescription(layerGroupInfo.getAbstract());
+		
+		WorkspaceInfo workspaceInfo = layerGroupInfo.getWorkspace();
+		if (workspaceInfo != null) {
+			layerGroupDoc.setWorkspaceName(workspaceInfo.getName());
+		}
+		
+		ArrayList<Entity> layerList = new ArrayList<Entity>();
+		List<PublishedInfo> pubLayerInfos = layerGroupInfo.getLayers();
+		if (pubLayerInfos != null) {
+			for (PublishedInfo pubLayerInfo : pubLayerInfos) {
+				Entity layer = new Entity();
+				layer.setName(pubLayerInfo.getName());
+				
+				// TODO: find workspace directly instead of doing String manipulation
+				String prefixedName = pubLayerInfo.prefixedName();
+				if (prefixedName != null && prefixedName.indexOf(":") != -1) {
+					layer.setWorkspaceName(prefixedName.substring(prefixedName.indexOf(":")));
+				}
+				layerList.add(layer);
+			}
+		}
+		layerGroupDoc.setLayers(layerList);
+		return layerGroupDoc;
+	}; 
+	
 	/**
 	 * 
 	 * @param storeInfo
@@ -192,34 +225,32 @@ public class Harvester {
 		storeDoc.setType(storeInfo.getType());
 		storeDoc.setName(storeInfo.getName());
 		storeDoc.setDescription(storeInfo.getDescription());
+		
+		WorkspaceInfo storeWorkspaceInfo = storeInfo.getWorkspace();
+		if (storeWorkspaceInfo != null) {
+			storeDoc.setWorkspaceName(storeWorkspaceInfo.getName());
+		}
 		return storeDoc;
-	}; 
+	}
 	
 	/**
 	 * 
 	 * @return
 	 */
 	public List<WorkspaceFullDoc> getComplete() {
-		HashMap<String, WorkspaceFullDoc> workspaceFullDocs = new HashMap<String, WorkspaceFullDoc>();
 		
-		List<LayerInfo> layerInfos = catalog.getLayers();
-		for(LayerInfo layerInfo: layerInfos) {
-			String layerWorkspaceName = layerInfo.getResource().getStore().getWorkspace().getName();
-			
-			if (!workspaceFullDocs.containsKey(layerWorkspaceName)) {
-				WorkspaceFullDoc newWorkspaceFull = new WorkspaceFullDoc();
-				newWorkspaceFull.setName(layerWorkspaceName);
-				workspaceFullDocs.put(layerWorkspaceName, newWorkspaceFull);
-			}
-			WorkspaceFullDoc wsFull = workspaceFullDocs.get(layerWorkspaceName);
-			wsFull.getLayers().add(collectLayerDoc(layerInfo));
+		ArrayList<WorkspaceFullDoc> workspaceFullDocs = new ArrayList<WorkspaceFullDoc>();
+		for(WorkspaceInfo workspaceInfo: catalog.getWorkspaces()) {
+			workspaceFullDocs.add(getWorkspaceFull(workspaceInfo.getName()));
 		}
-		return new ArrayList<WorkspaceFullDoc>(workspaceFullDocs.values());
+		// global stuff
+		workspaceFullDocs.add(getWorkspaceFull(null));
+		return workspaceFullDocs;
 	}
 	
 	/**
 	 * 
-	 * @param workspaceName
+	 * @param workspaceName  use null for global layers,layergroups, ...
 	 * @return
 	 */
 	public WorkspaceFullDoc getWorkspaceFull(String workspaceName) {
@@ -229,12 +260,33 @@ public class Harvester {
 		ArrayList<LayerDoc> layerList = new ArrayList<LayerDoc>();
 		List<LayerInfo> layerInfos = catalog.getLayers();
 		for(LayerInfo layerInfo: layerInfos) {
-			String layerWorkspaceName = layerInfo.getResource().getStore().getWorkspace().getName();
-			if (layerWorkspaceName.equals(workspaceName)) {
+			String layerWorkspaceName = null;
+			
+			WorkspaceInfo storeWs = layerInfo.getResource().getStore().getWorkspace();
+			if (storeWs != null) {
+				layerWorkspaceName = storeWs.getName();
+			}
+			if ((workspaceName == null && layerWorkspaceName == null) || (layerWorkspaceName != null && layerWorkspaceName.equals(workspaceName))) {
 				layerList.add(collectLayerDoc(layerInfo));
 			}
 		}
 		workspace.setLayers(layerList);
+		
+		ArrayList<LayerGroupDoc> layerGroupList = new ArrayList<LayerGroupDoc>();
+		List<LayerGroupInfo> layerGroupInfos = catalog.getLayerGroups();
+		for(LayerGroupInfo layerGroupInfo: layerGroupInfos) {
+			String lgWsName = null;
+			
+			WorkspaceInfo lgWs = layerGroupInfo.getWorkspace();
+			if (lgWs != null) {
+				lgWsName = lgWs.getName();
+			}
+			
+			if ((workspaceName == null && lgWs == null) || (workspaceName != null && workspaceName.equals(lgWsName))) {
+				layerGroupList.add(collectLayerGroupDoc(layerGroupInfo));
+			}
+		}
+		workspace.setLayerGroups(layerGroupList);
 		
 		return workspace;
 	}
