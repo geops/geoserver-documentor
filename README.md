@@ -24,6 +24,40 @@ restart geoserver. The `target` directory will also contain the dependencies whi
 geoserver.
 
 
+Usage
+=====
+
+Documenting Postgresql relations
+--------------------------------
+
+Documentor documents the relations used by a layer by default. This also includes for example all tables referenced by a view when geoserver uses a view as its datasource.
+
+Syntax:
+
+     
+	  Directives:
+	  
+	    * ignore
+	      ignore the current entity
+	    
+	    * include-ref [reference]
+	      Also load the documentation for the referenced entity
+	      
+	    * ignore-ref [reference]
+	      Ignore the reference to the specified entity
+	 
+	      
+	  References:
+	  
+	  The syntax to reference tables is
+	  
+	      table:[table schema].[table name]
+	 
+	  Quoted identifiers are allowed.
+	 
+
+These directives so far are supported in comments on Postgresql tables and views.
+
 Known issues
 ============
 

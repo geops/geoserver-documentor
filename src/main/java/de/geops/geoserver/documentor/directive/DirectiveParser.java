@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 //import org.geotools.util.logging.Logging;
 
 /**
- * implementation of the domain-specific description directives used to
+ * Implementation of the domain-specific description directives used to
  * reference entities to include in the documentation
  * 
  * Example:
@@ -29,6 +29,15 @@ import java.util.regex.Pattern;
  *     
  *   * ignore-ref [reference]
  *     Ignore the reference to the specified entity
+ *
+ *     
+ * References:
+ * 
+ * The syntax to reference tables is
+ * 
+ *     table:[table schema].[table name]
+ *
+ * Quoted identifiers are allowed.
  * 
  * @author nico
  *
