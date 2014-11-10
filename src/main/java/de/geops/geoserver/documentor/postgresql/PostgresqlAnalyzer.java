@@ -113,6 +113,63 @@ public class PostgresqlAnalyzer {
 	}
 	
 	
+	private String executeAndFetchString(String query) throws PostgresqlException {
+		Statement stmt = null;
+		try {
+			stmt = connection.createStatement();
+			ResultSet rs = stmt.executeQuery(query);
+			if (!rs.next()) {
+				throw new PostgresqlException("Query \""+query+"\" did not return anything");
+			}
+			return rs.getString(1);
+		} catch (SQLException e) {
+			throw new PostgresqlException("Could not execute query: "+query, e);
+		} finally {
+			if (stmt != null) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					LOGGER.log(Level.SEVERE, "could not close statement", e);
+				}
+			}
+		}	
+	}
+	
+	public String getDatabaseName() throws PostgresqlException {
+		return executeAndFetchString("select current_database()");	
+	}
+	
+	public String getPostgisVersion() throws PostgresqlException {
+		String postgisVersion = null;
+		Statement stmtNspname = null;
+		try {
+			stmtNspname = connection.createStatement();
+			ResultSet rsNspname = stmtNspname.executeQuery(
+					"select pp.proname, pns.nspname "
+					+" from pg_catalog.pg_proc pp "
+					+" join pg_catalog.pg_namespace pns on pp.pronamespace = pns.oid "
+					+" where pp.proname = 'postgis_version' and pp.pronargs = 0 and not pp.proisagg and not pp.proretset");
+			if (rsNspname.next()) {
+				postgisVersion = executeAndFetchString("select "+rsNspname.getString(2)+"."+rsNspname.getString(1)+"()");
+			}
+		} catch (SQLException e) {
+			throw new PostgresqlException("Could not fetch the Postgresql version", e);
+		} finally {
+			if (stmtNspname != null) {
+				try {
+					stmtNspname.close();
+				} catch (SQLException e) {
+					LOGGER.log(Level.SEVERE, "could not close statement", e);
+				}
+			}
+		}
+		return postgisVersion;
+	}
+	
+	public String getPostgresqlVersion() throws PostgresqlException {
+		return executeAndFetchString("select version()");	
+	}
+	
 	public List<TableDoc> getTableDocs() {
 		return new ArrayList<TableDoc>(this.tablesFound);
 	}
@@ -161,6 +218,7 @@ public class PostgresqlAnalyzer {
 		return directiveParser.ignoreThisEntity();	
 	}
 	
+	
 	protected void ignoreTable(String tableSchema, String tableName) {
 		TableDoc testTableDoc = new TableDoc();
 		testTableDoc.setTableName(tableName);
@@ -207,31 +265,14 @@ public class PostgresqlAnalyzer {
 		}	
 	}
 	
-	
 	public void readReferencedTables(String query) throws PostgresqlException {
 		String analyzableQuery = ExplainAnalyzer.createQuery(query);
-		Statement stmt = null;
-		try {
-			stmt = connection.createStatement();
-			ResultSet rs = stmt.executeQuery(analyzableQuery);
-			if (!rs.next()) {
-				throw new PostgresqlException("Could not fetch the EXPLAIN plan");
-			}
-			ExplainAnalyzer explainAnalyzer = new ExplainAnalyzer(rs.getString(1));
-			for (Table table: explainAnalyzer.getReferencedTables()) {
-				this.readTable(table.getTableSchema(), table.getTableName(), false);
-			}
-		} catch (SQLException e) {
-			throw new PostgresqlException("Could not fetch the EXPLAIN plan", e);
-		} finally {
-			if (stmt != null) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					LOGGER.log(Level.SEVERE, "could not close statement", e);
-				}
-			}
-		}	
+		String plan = executeAndFetchString(analyzableQuery);
+
+		ExplainAnalyzer explainAnalyzer = new ExplainAnalyzer(plan);
+		for (Table table: explainAnalyzer.getReferencedTables()) {
+			this.readTable(table.getTableSchema(), table.getTableName(), false);
+		}
 	}
 	
 	public void readReferencedTables(String tableSchema, String tableName) throws PostgresqlException {

@@ -245,6 +245,24 @@ public class Harvester {
 		if (storeWorkspaceInfo != null) {
 			storeDoc.setWorkspaceName(storeWorkspaceInfo.getName());
 		}
+		
+		if (storeInfo.getType().equals("PostGIS")) {
+			PostgresqlAnalyzer analyzer = null;
+			try {
+				 analyzer = new PostgresqlAnalyzer(storeInfo);
+				 storeDoc.addInfo("Postgresql Version", analyzer.getPostgresqlVersion());
+				 storeDoc.addInfo("PostGIS version", analyzer.getPostgisVersion());
+				 storeDoc.addInfo("DB name", analyzer.getDatabaseName());
+				 
+			} catch (PostgresqlException e) {
+				LOGGER.log(Level.SEVERE, "Could not analyze the store for layer "+layer.getName(), e);
+				layer.addDocumentationError(e.getMessage());
+			} finally {
+				if (analyzer != null) {
+					analyzer.dispose();
+				}
+			}
+		}
 		layer.setStore(storeDoc);
 	}; 
 	
