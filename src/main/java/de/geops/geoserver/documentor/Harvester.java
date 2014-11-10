@@ -20,6 +20,7 @@ import org.geoserver.catalog.MetadataMap;
 import org.geoserver.catalog.PublishedInfo;
 import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.StoreInfo;
+import org.geoserver.catalog.StyleInfo;
 import org.geoserver.catalog.WorkspaceInfo;
 import org.geoserver.web.GeoServerApplication;
 import org.geotools.jdbc.RegexpValidator;
@@ -72,7 +73,7 @@ public class Harvester {
 	 */
 	protected FeatureTypeDoc collectFeatureTypeDoc(FeatureTypeInfo featureTypeInfo, final StoreInfo storeInfo) {
 		FeatureTypeDoc featureTypeDoc = new FeatureTypeDoc();
-			
+
 		MetadataMap metadata = featureTypeInfo.getMetadata();
 		if (metadata.containsKey(FeatureTypeInfo.JDBC_VIRTUAL_TABLE)) {
 			VirtualTable vt = (VirtualTable) metadata.get(FeatureTypeInfo.JDBC_VIRTUAL_TABLE);
@@ -166,7 +167,7 @@ public class Harvester {
 		layer.setType(layerInfo.getType().toString().toLowerCase());
 		layer.setAdvertized(layerInfo.isAdvertised());
 		layer.setEnabled(layerInfo.isEnabled());
-		
+
 		ArrayList<String> keywordList = new ArrayList<String>();
 		List<KeywordInfo> resourceKeywords = resourceInfo.getKeywords();
 		if (resourceKeywords != null) {
@@ -180,8 +181,19 @@ public class Harvester {
 		
 		if (resourceInfo instanceof FeatureTypeInfo) {
 			layer.setFeatureType(this.collectFeatureTypeDoc((FeatureTypeInfo) resourceInfo, storeInfo));
-
 		}
+		
+		// styles
+		layer.setDefaultStyle(styleInfoToEntity(layerInfo.getDefaultStyle()));
+		ArrayList<Entity> styleList = new ArrayList<Entity>();
+		for(StyleInfo styleInfo : layerInfo.getStyles()) {
+			Entity styleEntity = styleInfoToEntity(styleInfo);
+			if (styleEntity != null) {
+				styleList.add(styleEntity);
+			}
+		}
+		layer.setStyles(styleList);
+		
 		return layer;
 	}
 	
@@ -213,7 +225,7 @@ public class Harvester {
 		}
 		layerGroupDoc.setLayers(layerList);
 		return layerGroupDoc;
-	}; 
+	}
 	
 	/**
 	 * 
@@ -231,7 +243,7 @@ public class Harvester {
 			storeDoc.setWorkspaceName(storeWorkspaceInfo.getName());
 		}
 		return storeDoc;
-	}
+	}; 
 	
 	/**
 	 * 
@@ -303,5 +315,24 @@ public class Harvester {
 			workspaceList.add(workspace);
 		}
 		return workspaceList;
+	}
+	
+	/**
+	 * 
+	 * @param styleInfo
+	 * @return
+	 */
+	private Entity styleInfoToEntity(StyleInfo styleInfo) {
+		if (styleInfo != null) {
+			Entity entity = new Entity();
+			entity.setName(styleInfo.getName());
+			
+			WorkspaceInfo wsInfo = styleInfo.getWorkspace();
+			if (wsInfo != null) {
+				entity.setWorkspaceName(wsInfo.getName());
+			}
+			return entity;
+		}
+		return null;
 	}
 }

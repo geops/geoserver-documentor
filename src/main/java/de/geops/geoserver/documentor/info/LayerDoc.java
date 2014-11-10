@@ -26,8 +26,15 @@ public class LayerDoc extends LayerBaseDoc {
 
 	protected boolean isEnabled;
 	
-	protected List<String> keywords = new ArrayList<String>();
+	protected Entity defaultStyle;
 	
+	protected List<Entity> styles = new ArrayList<Entity>();
+
+	protected List<String> keywords = new ArrayList<String>();
+
+	public Entity getDefaultStyle() {
+		return defaultStyle;
+	}
 
 	public FeatureTypeDoc getFeatureType() {
 		return featureType;
@@ -36,13 +43,18 @@ public class LayerDoc extends LayerBaseDoc {
 	public List<String> getKeywords() {
 		return keywords;
 	}
-
+	
 	public String getNativeName() {
 		return nativeName;
 	}
+	
 
 	public StoreDoc getStore() {
 		return store;
+	}
+
+	public List<Entity> getStyles() {
+		return styles;
 	}
 
 	public String getType() {
@@ -61,6 +73,10 @@ public class LayerDoc extends LayerBaseDoc {
 		this.isAdvertized = isAdvertized;
 	}
 
+	public void setDefaultStyle(Entity defaultStyle) {
+		this.defaultStyle = defaultStyle;
+	}
+
 	public void setEnabled(boolean isEnabled) {
 		this.isEnabled = isEnabled;
 	}
@@ -73,13 +89,17 @@ public class LayerDoc extends LayerBaseDoc {
 		this.keywords = keywords;
 	}
 
-
 	public void setNativeName(String nativeName) {
 		this.nativeName = nativeName;
 	}
 
+
 	public void setStore(StoreDoc storeDoc) {
 		this.store = storeDoc;
+	}
+
+	public void setStyles(List<Entity> styles) {
+		this.styles = styles;
 	}
 
 	public void setType(String type) {
