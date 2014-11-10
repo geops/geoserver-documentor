@@ -71,7 +71,7 @@ public class Harvester {
 	 * @param storeInfo
 	 * @return
 	 */
-	protected FeatureTypeDoc collectFeatureTypeDoc(FeatureTypeInfo featureTypeInfo, final StoreInfo storeInfo) {
+	protected void collectFeatureTypeDoc(LayerDoc layerDoc, FeatureTypeInfo featureTypeInfo, final StoreInfo storeInfo) {
 		FeatureTypeDoc featureTypeDoc = new FeatureTypeDoc();
 
 		MetadataMap metadata = featureTypeInfo.getMetadata();
@@ -117,7 +117,9 @@ public class Harvester {
 			featureTypeDoc.setProperties(properties);
 			
 		} catch (IOException e) {
-			LOGGER.log(Level.SEVERE, "Could not fetch the featuretype for "+featureTypeInfo.getName(), e);
+			String msg = "Could not fetch the featuretype for "+featureTypeInfo.getName();
+			LOGGER.log(Level.SEVERE, msg, e);
+			layerDoc.addDocumentationError(msg);
 		}
 		
 
@@ -139,14 +141,15 @@ public class Harvester {
 				}
 				featureTypeDoc.setRelatedTables(analyzer.getTableDocs());
 			} catch (PostgresqlException e) {
-				LOGGER.log(Level.SEVERE, "Could not analyze postgresql contents for feature "+featureTypeInfo.getName(), e);;
+				LOGGER.log(Level.SEVERE, "Could not analyze postgresql contents for feature "+featureTypeInfo.getName(), e);
+				layerDoc.addDocumentationError(e.getMessage());
 			} finally {
 				if (analyzer != null) {
 					analyzer.dispose();
 				}
 			}
 		}
-		return featureTypeDoc;
+		layerDoc.setFeatureType(featureTypeDoc);
 	}
 	
 	/**
@@ -177,10 +180,10 @@ public class Harvester {
 		}
 		layer.setKeywords(keywordList);		
 		
-		layer.setStore(this.collectStoreDoc(storeInfo));
+		this.collectStoreDoc(layer, storeInfo);
 		
 		if (resourceInfo instanceof FeatureTypeInfo) {
-			layer.setFeatureType(this.collectFeatureTypeDoc((FeatureTypeInfo) resourceInfo, storeInfo));
+			this.collectFeatureTypeDoc(layer, (FeatureTypeInfo) resourceInfo, storeInfo);
 		}
 		
 		// styles
@@ -232,7 +235,7 @@ public class Harvester {
 	 * @param storeInfo
 	 * @return
 	 */
-	protected StoreDoc collectStoreDoc(StoreInfo storeInfo) {
+	protected void collectStoreDoc(LayerDoc layer, StoreInfo storeInfo) {
 		StoreDoc storeDoc = new StoreDoc();
 		storeDoc.setType(storeInfo.getType());
 		storeDoc.setName(storeInfo.getName());
@@ -242,7 +245,7 @@ public class Harvester {
 		if (storeWorkspaceInfo != null) {
 			storeDoc.setWorkspaceName(storeWorkspaceInfo.getName());
 		}
-		return storeDoc;
+		layer.setStore(storeDoc);
 	}; 
 	
 	/**

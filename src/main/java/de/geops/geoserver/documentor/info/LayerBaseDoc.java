@@ -1,5 +1,8 @@
 package de.geops.geoserver.documentor.info;
 
+import java.util.ArrayList;
+import java.util.List;
+
 abstract class LayerBaseDoc extends Entity {
 
 	/**
@@ -12,8 +15,21 @@ abstract class LayerBaseDoc extends Entity {
 
 	protected String description;
 	
+	/**
+	 * Errors during generation of the documentations
+	 */
+	protected List<String> documentationErrors =  new ArrayList<String>();
+	
+	public void addDocumentationError(String documentationErrorMsg) {
+		this.documentationErrors.add(documentationErrorMsg);
+	}
+
 	public String getDescription() {
 		return description;
+	}
+
+	public List<String> getDocumentationErrors() {
+		return documentationErrors;
 	}
 	
 	public String getTitle() {
@@ -24,6 +40,10 @@ abstract class LayerBaseDoc extends Entity {
 		this.description = description;
 	}
 
+	public void setDocumentationErrors(List<String> documentationErrors) {
+		this.documentationErrors = documentationErrors;
+	}
+	
 	public void setTitle(String title) {
 		this.title = title;
 	}
