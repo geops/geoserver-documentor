@@ -15,7 +15,7 @@ public class DocumentationIndexPage extends GeoServerSecuredPage {
 	public DocumentationIndexPage() {
 		Harvester harvester = new Harvester();
 		
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		ListView listview = new ListView("listview", harvester.getWorkspaces()) {
 		    /**
 			 * 
