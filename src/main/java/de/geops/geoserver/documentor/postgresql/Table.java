@@ -24,6 +24,11 @@ class Table {
 	
 	String tableSchema = "public";
 
+	/**
+	 * regex pattern to split table and schema name with the schema being optional.
+	 * 
+	 * This pattern should respect postgresql quoting on identifiers.
+	 */
 	final static private Pattern tablePattern = Pattern.compile("(\"?([^\"]+)\"?\\.)?\"?([^\"]+)\"?");
 	
 	Table() {}

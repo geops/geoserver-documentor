@@ -55,8 +55,9 @@ Syntax:
 	 
 	  Quoted identifiers are allowed.
 	 
-
+	 
 These directives so far are supported in comments on Postgresql tables and views.
+
 
 Known issues
 ============

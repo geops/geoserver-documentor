@@ -22,6 +22,16 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+/**
+ * Analyze a query using PostgreSQLs EXPLAIN functionality to collect a
+ * complete list of related relations.
+ * 
+ * Sadly this does not catch the names of involved views as the underlying tables
+ * are resolved directly.
+ * 
+ * @author nico
+ *
+ */
 class ExplainAnalyzer {
 
 	/**

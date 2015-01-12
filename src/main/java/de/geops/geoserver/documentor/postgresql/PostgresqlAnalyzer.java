@@ -300,6 +300,7 @@ public class PostgresqlAnalyzer {
 				+" case when pc.relkind = 'r' then 'TABLE'"
 				+"      when pc.relkind = 'v' then 'VIEW' end as kind,"
 				+" case when pc.relkind = 'v' then "
+				// 		build a complete definition of the VIEW
 				+"		'CREATE OR REPLACE VIEW '||quote_ident(pns.nspname)||'.'||quote_ident(pc.relname)||E' AS\\n'||pg_get_viewdef(pc.oid, true) "
 				+" end as definition,"
 				+" pc.oid"
@@ -319,7 +320,7 @@ public class PostgresqlAnalyzer {
 				return;
 			}
 			
-			//analyze the comment for any documentor directives
+			// analyze the comment for any documentor directives
 			String comment = rsTable.getString("description");
 			DirectiveParser directiveParser = new DirectiveParser(comment);
 			comment = directiveParser.getClearedInput(); // remove all directives from the comment
@@ -341,6 +342,7 @@ public class PostgresqlAnalyzer {
 			// fetch columns for tables
 			if (kind != null) {
 				if (kind.equals("TABLE")) {
+					// collect the columns of the table
 					stmtColumns = connection.prepareStatement(
 							"select pa.attname, coalesce(parent_type.typname, pt.typname)::text||repeat('[]', pa.attndims) as typname, pd.description"
 							+" from pg_attribute pa"

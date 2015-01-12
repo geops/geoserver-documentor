@@ -2,7 +2,6 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 
-
 	<bean id="documentorDocumentationIndexPage" class="org.geoserver.web.MenuPageInfo">
 		<property name="id" value="documentor.index" />
 		<property name="titleKey" value="DocumentationIndexPage.title" />
@@ -17,16 +16,21 @@
 	<bean id="documentorRestConfigMapping" class="org.geoserver.rest.RESTMapping">
 		<property name="routes">
 			<map>
+				<!--  documentation for only the selected workspace -->
 				<entry>
 					<key>
 						<value>/documentor/workspaces/{workspace}</value>
 					</key>
+					<!-- reference to the bean defined further bellow -->
 					<value>documentorWorkspaceContentsFinder</value>
 				</entry>
+				
+				<!--  the complete documentation for the whole catalog -->
 				<entry>
 					<key>
 						<value>/documentor/complete</value>
 					</key>
+					<!-- reference to the bean defined further bellow -->
 					<value>documentorCompleteDocumentationFinder</value>
 				</entry>
 			</map>
