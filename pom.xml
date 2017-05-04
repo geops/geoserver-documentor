@@ -9,8 +9,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
   
-  
-  
 	<build>
 		<plugins>
 			<plugin>
@@ -122,13 +120,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
-		<issueManagement>
-		<url>http://tickets.trafimage.geops.ch/issues/14080071</url>
-	</issueManagement>
-	<scm>
-		<url>https://webgit.geops.de/trafimage-geoserver-transformations.git</url>
-	</scm>
 	<organization>
 		<name>geOps</name>
 		<url>http://www.geops.de</url>

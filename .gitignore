@@ -8,3 +8,5 @@
 
 *.backup
 *~
+/.idea/
+/geoserver-documentor.iml
