@@ -1,4 +1,9 @@
-Geoserver extension to provide a REST interface for extracting info for documentation generation
+Introduction
+============
+
+Geoserver extension to provide a REST interface (XML)for extracting info for documentation generation.
+This extension is currently tested with Geoserver 2.4.8 and 2.6.5. Contributions to make this extension compatible
+with more recent versions of Geoserver are very welcome.
 
 Installation
 ============
@@ -16,13 +21,23 @@ The generated JARs will be in the `target/` directory.
 Installing into Geoserver
 -------------------------
 
-To install this extension, drop all JARs of the `target` directory to geoservers WEB-INF/lib/ directory and 
-restart geoserver. The `target` directory will also contain the dependencies which are not already bundled with
-geoserver.
+To install this extension, follow these steps:
+* Drop all JARs of the `target` directory to geoservers `WEB-INF/lib/` directory. The `target` directory will also contain the dependencies which are not already bundled with geoserver.
+* Restart geoserver.
+* Congratulations, you're done.
 
 
 Usage
 =====
+
+An easy example would be a query to the `/complete` route.
+
+`curl -u admin:geoserver http://hostname:8080/geoserver/rest/documentor/complete.xml`
+
+The documentor respects the permissions of the credentials that are supplied via the request.
+It is advised to create a seperate account for the documentor and grant only the permission to ressources you want to
+be able to query.
+
 
 Documenting Postgresql relations
 --------------------------------
