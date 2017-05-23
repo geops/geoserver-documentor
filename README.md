@@ -101,6 +101,94 @@ Documenting Postgresql relations
 
 Documentor documents the relations used by a layer by default. This also includes for example all tables referenced by a view when geoserver uses a view as its datasource. This feature makes geoserver-documentor extremely helpful to document dependencies of tables and views in your database.
 
+Example:
+
+```xml
+<de.geops.geoserver.documentor.info.WorkspaceFullDoc>
+  <name>example</name>
+  <layers>
+    <de.geops.geoserver.documentor.info.LayerDoc>
+      <workspaceName>example</workspaceName>
+      <name>schicht</name>
+      <title defined-in="de.geops.geoserver.documentor.info.LayerBaseDoc">schicht</title>
+      <nativeName>schicht</nativeName>
+      <type>vector</type>
+      <featureType>
+        <properties>
+          <de.geops.geoserver.documentor.info.PropertyDoc>
+            <name>bohrprofil_id</name>
+            <type>Integer</type>
+          </de.geops.geoserver.documentor.info.PropertyDoc>
+          <de.geops.geoserver.documentor.info.PropertyDoc>
+            <name>schichten_id</name>
+            <type>Integer</type>
+          </de.geops.geoserver.documentor.info.PropertyDoc>
+          <de.geops.geoserver.documentor.info.PropertyDoc>
+            <name>tiefe</name>
+            <type>Float</type>
+          </de.geops.geoserver.documentor.info.PropertyDoc>
+        </properties>
+        <relatedTables>
+          <de.geops.geoserver.documentor.info.TableDoc>
+            <tableName>schicht</tableName>
+            <tableSchema>bohrung</tableSchema>
+            <type>TABLE</type>
+            <comment>Erfassung der einzelnen Bohrprofilschichten</comment>
+            <isMainTable>true</isMainTable>
+            <columns>
+              <de.geops.geoserver.documentor.info.PropertyDoc>
+                <name>schicht_id</name>
+                <type>int4</type>
+                <comment>Feature ID</comment>
+              </de.geops.geoserver.documentor.info.PropertyDoc>
+              <de.geops.geoserver.documentor.info.PropertyDoc>
+                <name>bohrprofil_id</name>
+                <type>int4</type>
+                <comment>Foreign Key: ID der Tabelle bohrprofil</comment>
+              </de.geops.geoserver.documentor.info.PropertyDoc>
+              <de.geops.geoserver.documentor.info.PropertyDoc>
+                <name>schichten_id</name>
+                <type>int4</type>
+              </de.geops.geoserver.documentor.info.PropertyDoc>
+              <de.geops.geoserver.documentor.info.PropertyDoc>
+                <name>tiefe</name>
+                <type>float4</type>
+                <comment>Tiefe der Schichtgrenze [m]</comment>
+              </de.geops.geoserver.documentor.info.PropertyDoc>
+            </columns>
+          </de.geops.geoserver.documentor.info.TableDoc>
+        </relatedTables>
+      </featureType>
+      <store>
+        <workspaceName>example</workspaceName>
+        <name>example</name>
+        <type>PostGIS</type>
+        <info>
+          <entry>
+            <string>DB name</string>
+            <string>bodo</string>
+          </entry>
+          <entry>
+            <string>Postgresql Version</string>
+            <string>PostgreSQL 9.5.6 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609, 64-bit</string>
+          </entry>
+          <entry>
+            <string>PostGIS version</string>
+            <string>2.2 USE_GEOS=1 USE_PROJ=1 USE_STATS=1</string>
+          </entry>
+        </info>
+      </store>
+      <isAdvertized>true</isAdvertized>
+      <isEnabled>true</isEnabled>
+      <keywords>
+        <string>features</string>
+        <string>schicht</string>
+      </keywords>
+    </de.geops.geoserver.documentor.info.LayerDoc>
+  </layers>
+</de.geops.geoserver.documentor.info.WorkspaceFullDoc>
+```
+
 Syntax:
 
      
