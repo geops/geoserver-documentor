@@ -70,82 +70,6 @@ Output would be something like this:
             <name>SUB_REGION</name>
             <type>String</type>
           </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>STATE_ABBR</name>
-            <type>String</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>LAND_KM</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>WATER_KM</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>PERSONS</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>FAMILIES</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>HOUSHOLD</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>MALE</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>FEMALE</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>WORKERS</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>DRVALONE</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>CARPOOL</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>PUBTRANS</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>EMPLOYED</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>UNEMPLOY</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>SERVICE</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>MANUAL</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>P_MALE</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>P_FEMALE</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
-          <de.geops.geoserver.documentor.info.PropertyDoc>
-            <name>SAMP_POP</name>
-            <type>Double</type>
-          </de.geops.geoserver.documentor.info.PropertyDoc>
         </properties>
       </featureType>
       <store>
@@ -175,7 +99,7 @@ be able to query.
 Documenting Postgresql relations
 --------------------------------
 
-Documentor documents the relations used by a layer by default. This also includes for example all tables referenced by a view when geoserver uses a view as its datasource.
+Documentor documents the relations used by a layer by default. This also includes for example all tables referenced by a view when geoserver uses a view as its datasource. This feature makes geoserver-documentor extremely helpful to document dependencies of tables and views in your database.
 
 Syntax:
 
