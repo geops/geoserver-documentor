@@ -14,7 +14,7 @@ Building the extension
 Run
 
     make build
-    
+
 The generated JARs will be in the `target/` directory.
 
 
@@ -191,29 +191,34 @@ Example:
 
 Syntax:
 
-     
+
       Directives:
-      
+
         * ignore
           ignore the current entity
-        
+
         * include-ref [reference]
           Also load the documentation for the referenced entity
-          
+
         * ignore-ref [reference]
           Ignore the reference to the specified entity
-     
-          
+
+
       References:
-      
+
       The syntax to reference tables is
-      
+
           table:[table schema].[table name]
-     
+
       Quoted identifiers are allowed.
-     
-     
+
+
 These directives so far are supported in comments on Postgresql tables and views.
+
+Example script
+==============
+
+Take a look at an [example script](./example/documentor-client.py) uses the the documentor REST interface and generates a file structure with .rst files that can be rendered into several output formats via Sphinx for example.
 
 
 Known issues
