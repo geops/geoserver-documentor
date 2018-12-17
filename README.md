@@ -101,7 +101,7 @@ Documenting Postgresql relations
 
 Documentor documents the relations used by a layer by default. This also includes for example all tables referenced by a view when geoserver uses a view as its datasource. This feature makes geoserver-documentor extremely helpful to document dependencies of tables and views in your database.
 
-Example:
+### Example
 
 ```xml
 <de.geops.geoserver.documentor.info.WorkspaceFullDoc>
@@ -189,8 +189,9 @@ Example:
 </de.geops.geoserver.documentor.info.WorkspaceFullDoc>
 ```
 
-Syntax:
+### Syntax for directives in comments
 
+These directives so far are supported in comments on Postgresql tables and views:
 
       Directives:
 
@@ -212,8 +213,6 @@ Syntax:
 
       Quoted identifiers are allowed.
 
-
-These directives so far are supported in comments on Postgresql tables and views.
 
 Example script
 ==============
