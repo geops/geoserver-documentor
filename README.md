@@ -8,6 +8,14 @@ with more recent versions of Geoserver are very welcome.
 Installation
 ============
 
+Dependencies
+------------
+
+The build process uses `make`,`maven` and `zip`. For the compile step is a Java JDK necessary.
+To install these dependencies unter debian/ubuntu linux run (maybe with `sudo`):
+
+`apt-get install make maven openjdk-8-jdk unzip`
+
 Building the extension
 ----------------------
 
